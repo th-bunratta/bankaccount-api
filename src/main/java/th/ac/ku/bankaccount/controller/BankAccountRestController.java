@@ -3,6 +3,7 @@ package th.ac.ku.bankaccount.controller;
 import org.springframework.web.bind.annotation.*;
 import th.ac.ku.bankaccount.data.BankAccountRepository;
 import th.ac.ku.bankaccount.model.BankAccount;
+import th.ac.ku.bankaccount.model.Transaction;
 
 import java.util.List;
 
@@ -22,6 +23,31 @@ public class BankAccountRestController {
         repository.flush();
         return record;
     }
+
+    @PostMapping("/withdraw/{accountId}")
+    public BankAccount withdraw(@RequestBody Transaction transaction, @PathVariable int accountId) {
+        BankAccount record = repository.findById(accountId).get();
+        double newBalance = record.getBalance() - transaction.amount;
+        if (newBalance >= 0) {
+            record.setBalance(newBalance);
+            repository.save(record);
+        }
+        return record;
+    }
+
+
+    @PostMapping("/deposit/{accountId}")
+    public BankAccount deposit(@RequestBody Transaction transaction, @PathVariable int accountId) {
+        BankAccount record = repository.findById(accountId).get();
+        double balance = record.getBalance();
+        if (transaction.amount > 0) {
+            double newBalance = balance + transaction.amount;
+            record.setBalance(newBalance);
+            repository.save(record);
+        }
+        return record;
+    }
+
 
     @GetMapping("/customer/{customerId}")
     public List<BankAccount> getAllCustomerId(@PathVariable int customerId) {
